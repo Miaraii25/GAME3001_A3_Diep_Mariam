@@ -10,6 +10,7 @@
 #include "Player.h"
 #include <array>
 #include <map>
+#include "BaseEnemy.h"
 
 #define ROWS 24
 #define COLS 32
@@ -42,14 +43,16 @@ public:
 
 private:
 	// Example-specific properties.
-	SDL_Texture* m_pTileText, * m_pPlayerText;
+	SDL_Texture* m_pTileText, * m_pPlayerText, * m_pEnemyText, * m_pCircleText;
+	// Example-specific properties.
+	std::vector<BaseEnemy*> m_enemies;
 	std::map<char, Tile*> m_tiles;
 	Player* m_pPlayer;
 	Sprite* m_pBling;
 	bool m_showCosts = false, m_hEuclid = true;
 
 	// Label for instruction
-	Label* m_pInstruct[6]; // press R, press H, press F, press M, right-click, left-click
+	Label* m_pInstruct[8]; // press R, press H, press F, press M, right-click, left-click
 };
 
 // Start the game

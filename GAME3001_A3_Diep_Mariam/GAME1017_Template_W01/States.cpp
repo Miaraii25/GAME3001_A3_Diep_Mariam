@@ -33,6 +33,8 @@ void GameState::Enter()
 	srand((unsigned)time(NULL));
 	m_pTileText = IMG_LoadTexture(Engine::Instance().GetRenderer(), "Img/Tiles.png");
 	m_pPlayerText = IMG_LoadTexture(Engine::Instance().GetRenderer(), "Img/Maga.png");
+	m_pEnemyText = IMG_LoadTexture(Engine::Instance().GetRenderer(), "Img/Enemies.png");
+	m_pCircleText = IMG_LoadTexture(Engine::Instance().GetRenderer(), "Img/Circle.png");
 	SOMA::Load("Aud/adventure.wav", "adventure", SOUND_MUSIC);
 	SOMA::Load("Aud/Click.wav", "Click", SOUND_SFX);
 	SOMA::Load("Aud/PressM.wav", "PressM", SOUND_SFX);
@@ -47,14 +49,22 @@ void GameState::Enter()
 
 	m_pInstruct[0] = new Label("standard", 35, 40, "Press R to restart the play scene", black);
 	m_pInstruct[1] = new Label("standard", 35, 55, "Press H to toggle the Debug view", black);
-	m_pInstruct[2] = new Label("standard", 35, 70, "Press F to find the shortest path (in debug view)", black);
-	m_pInstruct[3] = new Label("standard", 35, 85, "Press M to move actor", black);
-	m_pInstruct[4] = new Label("standard", 35, 100, "Right-click to set the goal tile (in debug view)", black);
-	m_pInstruct[5] = new Label("standard", 35, 115, "Left-click to set the starting tile (in debug view)", black);
+	m_pInstruct[2] = new Label("standard", 35, 70, "Press P to toggle idel/patrol mode of enemies ", black);
+	m_pInstruct[3] = new Label("standard", 35, 85, "Press F to find the shortest path (in debug view)", black);
+	m_pInstruct[4] = new Label("standard", 35, 100, "Press K to take damage", black);
+	m_pInstruct[5] = new Label("standard", 35, 115, "Press M to move actor", black);
+	m_pInstruct[6] = new Label("standard", 250, 125, "Right-click to set the goal tile (in debug view)", black);
+	m_pInstruct[7] = new Label("standard", 250, 135, "Left-click to set the starting tile (in debug view)", black);
 
-
+	//enemies
+	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(17) * 32, (float)(4) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 0.0f, 0, -1, m_pPlayer->GetDstP()));
+	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(6) * 32, (float)(10) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 90.0f, 1, 0, m_pPlayer->GetDstP()));
+	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(22) * 32, (float)(11) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 180.0f, 0, 1, m_pPlayer->GetDstP()));
+	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(23) * 32, (float)(15) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 270.0f, -1, 0, m_pPlayer->GetDstP()));
+	
 	m_pBling = new Sprite({ 224,64,32,32 }, { (float)(16) * 32, (float)(4) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pTileText);
 	m_pPlayer = new Player({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pPlayerText, 0, 0, 0, 4, m_pBling->GetDstP());
+	
 	ifstream inFile("Dat/Tiledata.txt");
 	if (inFile.is_open())
 	{ // Create map of Tile prototypes.
@@ -128,9 +138,13 @@ void GameState::Update()
 
 	if (EVMA::KeyPressed(SDL_SCANCODE_H))// Toggle debug mode.
 	{
-		m_showCosts = !m_showCosts;
+		m_showCosts = !m_showCosts; //=> Not support grisp now
+		for (auto it = m_enemies.begin(); it != m_enemies.end(); ++it) {
+			(*it)->SetDebugMode(m_showCosts);
+		}
 		SOMA::PlaySound("PressH", 0, 3);
 	}
+
 
 	if (m_showCosts)
 	{
@@ -151,15 +165,15 @@ void GameState::Update()
 				m_pPlayer->GetDstP()->y = (float)(yIdx * 32);
 				SOMA::PlaySound("Click", 0, 4);
 			}
-			else if (EVMA::MousePressed(3) /*&& (m_pPlayer->GetDstP()->x == m_pBling->GetDstP()->x) && (m_pPlayer->GetDstP()->y == m_pBling->GetDstP()->y)*/) // Else move the bling with right-click.
-			{
-				m_pBling->GetDstP()->x = (float)(xIdx * 32);
-				m_pBling->GetDstP()->y = (float)(yIdx * 32);
-				SOMA::PlaySound("Click", 0, 5);
-			}
-	
+
 		}
 	}
+	m_pPlayer->Update(); // Just stops MagaMan from moving.
+
+	for (auto it = m_enemies.begin(); it != m_enemies.end(); ++it) {
+		(*it)->Update();
+	}
+
 	if (EVMA::KeyPressed(SDL_SCANCODE_F))
 	{
 		SOMA::PlaySound("PressF", 0, 2);
@@ -180,10 +194,10 @@ void GameState::Update()
 		PAMA::GetShortestPath(Engine::Instance().GetLevel()[(int)(m_pPlayer->GetDstP()->y / 32)][(int)(m_pPlayer->GetDstP()->x / 32)]->Node(),
 			Engine::Instance().GetLevel()[(int)(m_pBling->GetDstP()->y / 32)][(int)(m_pBling->GetDstP()->x / 32)]->Node());
 	}
-	m_pPlayer->Update(); // Just stops MagaMan from moving.
-		
-	
 }
+   
+	
+
 
 void GameState::Render()
 {
@@ -210,12 +224,15 @@ void GameState::Render()
 
 		}
 	}
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 3; i++)
 	{
 		m_pInstruct[i]->Render();
 	}
+	for (auto it = m_enemies.begin(); it != m_enemies.end(); ++it) {
+		(*it)->Render();
+	}
 	m_pPlayer->Render();
-	m_pBling->Render();
+	//m_pBling->Render();
 	PAMA::DrawPath(); // I save the path in a static vector to be drawn here.
 	DEMA::FlushLines(); // And... render ALL the queued lines. Phew.
 	if (dynamic_cast<GameState*>(STMA::GetStates().back()))
@@ -265,6 +282,7 @@ void TitleState::Update()
 
 void TitleState::Render()
 {
+
 	SDL_SetRenderDrawColor(Engine::Instance().GetRenderer(), 255, 115, 90, 90);
 	SDL_RenderClear(Engine::Instance().GetRenderer());
 

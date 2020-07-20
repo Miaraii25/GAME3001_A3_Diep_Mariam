@@ -1,7 +1,6 @@
 #include "CollisionManager.h"
 #include "DebugManager.h"
 #include "Engine.h"
-#include "States.h"
 
 bool CollisionManager::AABBCheck(const SDL_FRect& object1, const SDL_FRect& object2)
 {
@@ -12,7 +11,7 @@ bool CollisionManager::AABBCheck(const SDL_FRect& object1, const SDL_FRect& obje
 
 bool CollisionManager::CircleCircleCheck(const SDL_FPoint object1, const SDL_FPoint object2, const double r1, const double r2)
 {
-	return (MAMA::Distance((double)object1.x, (double)object2.x, (double)object1.y, (double)object2.y) < (r1+r2));
+	return (MAMA::Distance((double)object1.x, (double)object2.x, (double)object1.y, (double)object2.y) < (r1 + r2));
 }
 
 bool CollisionManager::CircleAABBCheck(const SDL_FPoint object1, const double r, const SDL_FRect& object2)
@@ -28,7 +27,7 @@ bool CollisionManager::CircleAABBCheck(const SDL_FPoint object1, const double r,
 	else if (object1.y > object2.y + object2.h)
 		y1 = (double)object2.y + (double)object2.h;
 
-	return CircleCircleCheck({(float)x1, (float)y1}, {(float)object1.x, (float)object1.y}, r);
+	return CircleCircleCheck({ (float)x1, (float)y1 }, { (float)object1.x, (float)object1.y }, r);
 }
 
 bool CollisionManager::LinePointCheck(const SDL_FPoint object1_start, const SDL_FPoint object1_end, const SDL_FPoint object2)
@@ -39,7 +38,7 @@ bool CollisionManager::LinePointCheck(const SDL_FPoint object1_start, const SDL_
 	double lineLength = MAMA::Distance((double)object1_start.x, (double)object1_end.x, (double)object1_start.y, (double)object1_end.y);
 
 	double buffer = 0.2; // Extra distance since line thickness is one pixel.
-	
+
 	if (distToStart + distToEnd <= lineLength + buffer)
 		return true;
 	return false;
@@ -51,9 +50,9 @@ bool CollisionManager::PlayerCollision(const SDL_Rect player, const int dX, cons
 	int playerY = player.y / 32;
 	SDL_Rect p = { player.x + dX + 8 , player.y + dY + 6, player.w - 16, player.h - 10 }; // Adjusted bounding box.
 	Tile* tiles[4] = { Engine::Instance().GetLevel()[playerY][playerX],																				// Player's tile.
-					  Engine::Instance().GetLevel()[playerY][(playerX + 1 == COLS ? COLS-1 : playerX + 1)],										// Right tile.
-					  Engine::Instance().GetLevel()[(playerY + 1 == ROWS ? ROWS-1 : playerY + 1)][(playerX + 1 == COLS ? COLS-1 : playerX + 1)],	// Bottom-Right tile.
-					 Engine::Instance().GetLevel()[(playerY + 1 == ROWS ? ROWS-1 : playerY + 1)][playerX] };										// Bottom tile.
+					   Engine::Instance().GetLevel()[playerY][(playerX + 1 == COLS ? COLS - 1 : playerX + 1)],										// Right tile.
+					   Engine::Instance().GetLevel()[(playerY + 1 == ROWS ? ROWS - 1 : playerY + 1)][(playerX + 1 == COLS ? COLS - 1 : playerX + 1)],	// Bottom-Right tile.
+					   Engine::Instance().GetLevel()[(playerY + 1 == ROWS ? ROWS - 1 : playerY + 1)][playerX] };										// Bottom tile.
 	for (int i = 0; i < 4; i++)
 	{
 		SDL_Rect t = MAMA::ConvertFRect2Rect(*(tiles[i]->GetDstP()));

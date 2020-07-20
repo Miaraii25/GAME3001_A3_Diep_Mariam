@@ -17,8 +17,8 @@ void DebugManager::QueueLine(const SDL_Point start, const SDL_Point end, const S
 
 void DebugManager::FlushLines()
 {
-	for (unsigned i = 0, j = 0; i < s_points.size(); i+=2, j++)
-		DrawLine(s_points[i], s_points[i+1], s_colors[j]);
+	for (unsigned i = 0, j = 0; i < s_points.size(); i += 2, j++)
+		DrawLine(s_points[i], s_points[i + 1], s_colors[j]);
 	Quit(); // Clears out vectors.
 }
 
@@ -27,7 +27,7 @@ void DebugManager::DrawRay(const SDL_Point start, const double angle, const doub
 	double dX, dY;
 	MAMA::SetDeltas(angle, dX, dY, length, length);
 	//std::cout << start.x << ',' << start.y << '|' << start.x+dX << ',' << start.y+dY << std::endl;
-	DrawLine({(int)start.x, (int)start.y}, { (int)(start.x + dX), (int)(start.y + dY) }, col);
+	DrawLine({ (int)start.x, (int)start.y }, { (int)(start.x + dX), (int)(start.y + dY) }, col);
 }
 
 
