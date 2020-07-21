@@ -5,6 +5,7 @@
 
 void PathManager::GetShortestPath(PathNode* start, PathNode* goal)
 {
+	// std::cout << "Starting pathing..." << std::endl;
 	s_path.clear(); // Clear the old saved path so we can save a new one.
 	s_path.shrink_to_fit();
 	NodeRecord* currentRecord = new NodeRecord(start);
@@ -13,13 +14,14 @@ void PathManager::GetShortestPath(PathNode* start, PathNode* goal)
 	while (s_open.size() > 0)
 	{
 		currentRecord = GetSmallestNode();
-
+		// std::cout << "Doing node at: " << currentRecord->m_node->x << ',' << currentRecord->m_node->y << std::endl;
+		// std::cout << "Found " << currentRecord->m_node->GetConnections().size() << " connections!" << std::endl;
 		if (currentRecord->m_node == goal)
 		{
 			s_open.erase(std::remove(s_open.begin(), s_open.end(), currentRecord), s_open.end());
 			s_closed.push_back(currentRecord);
 			break; // We found the goal!
-		}	
+		}
 		std::vector<PathConnection*> connections = currentRecord->m_node->GetConnections();
 		for (unsigned i = 0; i < connections.size(); i++)
 		{
@@ -58,14 +60,14 @@ void PathManager::GetShortestPath(PathNode* start, PathNode* goal)
 		s_closed.push_back(currentRecord);
 		// std::cout << "Open size: " << s_open.size() << std::endl;
 	}
-
+	// std::cout << "Done while loop, open size:" << s_open.size() << std::endl;
 	if (currentRecord->m_node != goal)
 	{
 		std::cout << "Could not find path!" << std::endl;
 	}
 	else
 	{
-		
+		// std::cout << "Found goal at: [" << currentRecord->m_node->y / 32 << ',' << currentRecord->m_node->x / 32 << ']' << std::endl;
 		while (currentRecord->m_node != start)
 		{
 			//std::cout << "Doing record for: [" << currentRecord->m_node->y/32 << ',' << currentRecord->m_node->x/32 << ']' << std::endl;
@@ -74,7 +76,8 @@ void PathManager::GetShortestPath(PathNode* start, PathNode* goal)
 		}
 		std::reverse(s_path.begin(), s_path.end());
 	}
-
+	// Clean up lists. Uncomment the cout below to see how many records we have to clean up.
+	// std::cout << "Cleaning up..." << "open size: " << s_open.size() << " | closed size: " << s_closed.size() << std::endl;
 	for (unsigned i = 0; i < s_open.size(); i++)
 	{
 		delete s_open[i];
@@ -95,7 +98,7 @@ NodeRecord* PathManager::GetSmallestNode()
 {
 	std::vector<NodeRecord*>::iterator smallest = s_open.begin();
 	std::vector<NodeRecord*>::iterator current = s_open.begin();
-	
+
 	while (++current != s_open.end())
 	{
 		if ((*current)->m_totalCost < (*smallest)->m_totalCost)
@@ -116,11 +119,6 @@ std::vector<NodeRecord*>& PathManager::ClosedList()
 	return s_closed;
 }
 
-const std::vector<PathConnection*>& PathManager::getPath()
-{
-	return s_path;
-}
-
 bool PathManager::ContainsNode(std::vector<NodeRecord*>& list, PathNode* n)
 {
 	for (unsigned i = 0; i < list.size(); i++)
@@ -129,7 +127,7 @@ bool PathManager::ContainsNode(std::vector<NodeRecord*>& list, PathNode* n)
 	return false;
 }
 
-NodeRecord* PathManager::GetNodeRecord(std::vector<NodeRecord*>& list, PathNode * n)
+NodeRecord* PathManager::GetNodeRecord(std::vector<NodeRecord*>& list, PathNode* n)
 {
 	for (unsigned i = 0; i < list.size(); i++)
 		if (list[i]->m_node == n)
@@ -142,7 +140,7 @@ double PathManager::HEuclid(const PathNode* start, const PathNode* goal)
 	return MAMA::Distance(start->x, goal->x, start->y, goal->y);
 }
 
-double PathManager::HManhat(const PathNode * start, const PathNode * goal)
+double PathManager::HManhat(const PathNode* start, const PathNode* goal)
 {
 	return (std::abs(start->x - goal->x) + std::abs(start->y - goal->y));
 }
@@ -151,12 +149,12 @@ void PathManager::DrawPath()
 {
 	for (unsigned i = 0; i < s_path.size(); i++)
 	{
-		DEMA::QueueLine({ s_path[i]->GetFromNode()->x + 16, s_path[i]->GetFromNode()->y + 16 }, 
-			{ MAMA::HalfwayPoint(s_path[i]->GetFromNode()->Pt(), s_path[i]->GetToNode()->Pt()).x+16, 
+		DEMA::QueueLine({ s_path[i]->GetFromNode()->x + 16, s_path[i]->GetFromNode()->y + 16 },
+			{ MAMA::HalfwayPoint(s_path[i]->GetFromNode()->Pt(), s_path[i]->GetToNode()->Pt()).x + 16,
 			MAMA::HalfwayPoint(s_path[i]->GetFromNode()->Pt(), s_path[i]->GetToNode()->Pt()).y + 16 }, { 255,255,0,255 });
-		DEMA::QueueLine({ MAMA::HalfwayPoint(s_path[i]->GetFromNode()->Pt(), s_path[i]->GetToNode()->Pt()).x+16, 
+		DEMA::QueueLine({ MAMA::HalfwayPoint(s_path[i]->GetFromNode()->Pt(), s_path[i]->GetToNode()->Pt()).x + 16,
 			MAMA::HalfwayPoint(s_path[i]->GetFromNode()->Pt(), s_path[i]->GetToNode()->Pt()).y + 16 },
-			{ s_path[i]->GetToNode()->x+16, s_path[i]->GetToNode()->y + 16 }, { 255,128,0,255 });
+			{ s_path[i]->GetToNode()->x + 16, s_path[i]->GetToNode()->y + 16 }, { 255,128,0,255 });
 	}
 }
 

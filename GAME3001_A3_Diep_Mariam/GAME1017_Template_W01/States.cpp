@@ -35,6 +35,8 @@ void GameState::Enter()
 	m_pPlayerText = IMG_LoadTexture(Engine::Instance().GetRenderer(), "Img/Maga.png");
 	m_pEnemyText = IMG_LoadTexture(Engine::Instance().GetRenderer(), "Img/Enemies.png");
 	m_pCircleText = IMG_LoadTexture(Engine::Instance().GetRenderer(), "Img/Circle.png");
+	m_pBulletText = IMG_LoadTexture(Engine::Instance().GetRenderer(), "Img/Enemies.png");
+
 	SOMA::Load("Aud/adventure.wav", "adventure", SOUND_MUSIC);
 	SOMA::Load("Aud/Click.wav", "Click", SOUND_SFX);
 	SOMA::Load("Aud/PressM.wav", "PressM", SOUND_SFX);
@@ -61,10 +63,13 @@ void GameState::Enter()
 	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(6) * 32, (float)(10) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 90.0f, 1, 0, m_pPlayer->GetDstP()));
 	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(22) * 32, (float)(11) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 180.0f, 0, 1, m_pPlayer->GetDstP()));
 	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(23) * 32, (float)(15) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 270.0f, -1, 0, m_pPlayer->GetDstP()));
+
+	// Add bullet
+	m_pBullet = new Bullet({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pBulletText, 0, 0, 0, 4);
 	
 	m_pBling = new Sprite({ 224,64,32,32 }, { (float)(16) * 32, (float)(4) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pTileText);
-	m_pPlayer = new Player({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pPlayerText, 0, 0, 0, 4, m_pBling->GetDstP());
-	
+	m_pPlayer = new Player({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pPlayerText, 0, 0, 0, 4);
+
 	ifstream inFile("Dat/Tiledata.txt");
 	if (inFile.is_open())
 	{ // Create map of Tile prototypes.
@@ -146,7 +151,30 @@ void GameState::Update()
 	}
 
 
-	if (m_showCosts)
+	//if (m_showCosts)
+	//{
+	//	if (EVMA::KeyPressed(SDL_SCANCODE_SPACE)) // Toggle the heuristic used for pathfinding.
+	//	{
+	//		m_hEuclid = !m_hEuclid;
+	//		std::cout << "Setting " << (m_hEuclid ? "Euclidian" : "Manhattan") << " heuristic..." << std::endl;
+	//	}
+	//	if (EVMA::MousePressed(1) || EVMA::MousePressed(3)) // If user has clicked.
+	//	{
+	//		int xIdx = (EVMA::GetMousePos().x / 32);
+	//		int yIdx = (EVMA::GetMousePos().y / 32);
+	//		if (Engine::Instance().GetLevel()[yIdx][xIdx]->IsObstacle() || Engine::Instance().GetLevel()[yIdx][xIdx]->IsHazard()) // Node() == nullptr;
+	//			return; // We clicked on an invalid tile.
+	//		if (EVMA::MousePressed(1)) // Move the player with left-click.
+	//		{
+	//			m_pPlayer->GetDstP()->x = (float)(xIdx * 32);
+	//			m_pPlayer->GetDstP()->y = (float)(yIdx * 32);
+	//			SOMA::PlaySound("Click", 0, 4);
+	//		}
+
+	//	}
+	//}
+
+	if (1)
 	{
 		if (EVMA::KeyPressed(SDL_SCANCODE_SPACE)) // Toggle the heuristic used for pathfinding.
 		{
@@ -155,14 +183,12 @@ void GameState::Update()
 		}
 		if (EVMA::MousePressed(1) || EVMA::MousePressed(3)) // If user has clicked.
 		{
-			int xIdx = (EVMA::GetMousePos().x / 32);
-			int yIdx = (EVMA::GetMousePos().y / 32);
-			if (Engine::Instance().GetLevel()[yIdx][xIdx]->IsObstacle() || Engine::Instance().GetLevel()[yIdx][xIdx]->IsHazard()) // Node() == nullptr;
-				return; // We clicked on an invalid tile.
+
 			if (EVMA::MousePressed(1)) // Move the player with left-click.
 			{
-				m_pPlayer->GetDstP()->x = (float)(xIdx * 32);
-				m_pPlayer->GetDstP()->y = (float)(yIdx * 32);
+				//m_pPlayer->GetDstP()->x = (float)(xIdx * 32);
+				//m_pPlayer->GetDstP()->y = (float)(yIdx * 32);
+				m_pBullet->Shoot({ (int)(m_pPlayer->GetDstP()->x + m_pPlayer->GetDstP()->w / 2) , (int)(m_pPlayer->GetDstP()->y + m_pPlayer->GetDstP()->h / 2) }, m_pPlayer->GetDirection());
 				SOMA::PlaySound("Click", 0, 4);
 			}
 
@@ -172,6 +198,20 @@ void GameState::Update()
 
 	for (auto it = m_enemies.begin(); it != m_enemies.end(); ++it) {
 		(*it)->Update();
+	}
+
+	m_pBullet->Update();
+
+	if (!m_pBullet->isDied())
+	{
+		for (auto it = m_enemies.begin(); it != m_enemies.end(); ++it) {
+			if (COMA::AABBCheck(*m_pBullet->GetDstP(), *((*it)->GetDstP())))
+			{
+				(*it)->Collision();
+				m_pBullet->Collision();
+			}
+
+		}
 	}
 
 	if (EVMA::KeyPressed(SDL_SCANCODE_F))
@@ -224,20 +264,40 @@ void GameState::Render()
 
 		}
 	}
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		m_pInstruct[i]->Render();
 	}
+
+	m_pPlayer->Render();
+	DrawHealthBar({ (int)m_pPlayer->GetDstP()->x - 16, (int)m_pPlayer->GetDstP()->y - 16, 64,16 }, m_pPlayer->getHealthLevel());
+
 	for (auto it = m_enemies.begin(); it != m_enemies.end(); ++it) {
 		(*it)->Render();
+		DrawHealthBar({ (int)(*it)->GetDstP()->x - 16, (int)(*it)->GetDstP()->y - 16, 64,16 }, (*it)->getHealthLevel());
 	}
-	m_pPlayer->Render();
-	//m_pBling->Render();
+
+	m_pBullet->Render();
+
 	PAMA::DrawPath(); // I save the path in a static vector to be drawn here.
 	DEMA::FlushLines(); // And... render ALL the queued lines. Phew.
 	if (dynamic_cast<GameState*>(STMA::GetStates().back()))
 		State::Render();
 	SDL_RenderPresent(Engine::Instance().GetRenderer());
+}
+
+void GameState::DrawHealthBar(SDL_Rect rect, int level)
+{
+	SDL_Rect liveRect;
+	liveRect.x = rect.x;
+	liveRect.y = rect.y;
+	liveRect.w = (rect.w * level) / 100;
+	liveRect.h = rect.h;
+
+	SDL_SetRenderDrawColor(Engine::Instance().GetRenderer(), 250, 0, 0, 255);
+	SDL_RenderFillRect(Engine::Instance().GetRenderer(), &rect);
+	SDL_SetRenderDrawColor(Engine::Instance().GetRenderer(), 0, 255, 0, 255);
+	SDL_RenderFillRect(Engine::Instance().GetRenderer(), &liveRect);
 }
 
 void GameState::Exit()

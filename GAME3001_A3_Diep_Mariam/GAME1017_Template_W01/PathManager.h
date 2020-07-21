@@ -11,7 +11,6 @@ public:
 	static NodeRecord* GetSmallestNode();
 	static std::vector<NodeRecord*>& OpenList();
 	static std::vector<NodeRecord*>& ClosedList();
-	static const std::vector<PathConnection*>& getPath();
 	static bool ContainsNode(std::vector<NodeRecord*>& list, PathNode* n);
 	static NodeRecord* GetNodeRecord(std::vector<NodeRecord*>& list, PathNode* n);
 	static double HEuclid(const PathNode* start, const PathNode* goal);

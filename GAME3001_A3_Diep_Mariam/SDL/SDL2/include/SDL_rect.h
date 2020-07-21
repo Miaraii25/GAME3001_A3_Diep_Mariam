@@ -90,7 +90,7 @@ extern "C" {
         float y;
         float w;
         float h;
-    } SDL_FRect;
+    } SDL_FRect ;
 
 
     /**

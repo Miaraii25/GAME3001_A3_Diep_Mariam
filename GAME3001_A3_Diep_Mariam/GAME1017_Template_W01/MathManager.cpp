@@ -70,18 +70,18 @@ double MathManager::LerpD(double a, double b, double factor)
 
 double MathManager::LerpRad(double a, double b, double factor)
 {
-	double result; 
+	double result;
 	double diff = b - a;
 	if (diff < -M_PI)
 	{
-		b += M_PI*2;
+		b += M_PI * 2;
 		result = LerpD(a, b, factor);
 		if (result >= M_PI * 2)
 			result -= M_PI * 2;
 	}
 	else if (diff > M_PI)
 	{
-		b -= M_PI*2;
+		b -= M_PI * 2;
 		result = LerpD(a, b, factor);
 		if (result < 0.0)
 			result += M_PI * 2;
@@ -93,5 +93,5 @@ double MathManager::LerpRad(double a, double b, double factor)
 
 SDL_Point MathManager::HalfwayPoint(const SDL_Point& from, const SDL_Point& to)
 {
-	return {(int)(((double)from.x + (double)to.x)/2.0), (int)(((double)from.y + (double)to.y)/2.0)};
+	return { (int)(((double)from.x + (double)to.x) / 2.0), (int)(((double)from.y + (double)to.y) / 2.0) };
 }

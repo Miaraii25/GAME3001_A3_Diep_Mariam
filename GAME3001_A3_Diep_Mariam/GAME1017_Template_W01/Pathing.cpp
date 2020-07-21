@@ -13,7 +13,7 @@ PathNode::~PathNode()
 	for (unsigned i = 0; i < m_connections.size(); i++)
 	{
 		delete m_connections[i];
-		m_connections[i] = nullptr;
+		m_connections[i] = nullptr; // Wrangle your dangle.
 	}
 	m_connections.clear();
 	m_connections.shrink_to_fit();
@@ -21,7 +21,7 @@ PathNode::~PathNode()
 
 void PathNode::Update()
 {
-	SDL_Rect temp = { x-16, y-16, 32, 32 }; 
+	SDL_Rect temp = { x - 16, y - 16, 32, 32 }; // Made bounding box double the size of the node for easier dragging.
 	if (SDL_PointInRect(&EVMA::GetMousePos(), &temp))
 	{
 		if (EVMA::MouseHeld(1))
