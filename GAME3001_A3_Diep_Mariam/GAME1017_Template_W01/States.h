@@ -8,9 +8,11 @@
 
 #include "Tile.h"
 #include "Player.h"
+#include "BaseEnemy.h"
+#include "Bullet.h"
 #include <array>
 #include <map>
-#include "BaseEnemy.h"
+#include <vector>
 
 #define ROWS 24
 #define COLS 32
@@ -43,10 +45,12 @@ public:
 
 private:
 	// Example-specific properties.
-	SDL_Texture* m_pTileText, * m_pPlayerText, * m_pEnemyText, * m_pCircleText;
+	void DrawHealthBar(SDL_Rect rect, int level);
+	SDL_Texture* m_pTileText, * m_pPlayerText, * m_pEnemyText, * m_pCircleText, * m_pBulletText;
 	// Example-specific properties.
 	std::vector<BaseEnemy*> m_enemies;
 	std::map<char, Tile*> m_tiles;
+	Bullet* m_pBullet;
 	Player* m_pPlayer;
 	Sprite* m_pBling;
 	bool m_showCosts = false, m_hEuclid = true;

@@ -21,9 +21,10 @@ protected: // Private but inherited!
 // List button subclasses here...
 class PlayButton : public Button
 {
-private:
-	void Execute();
 public:
 	PlayButton(SDL_Rect src, SDL_FRect dst, SDL_Renderer* r, SDL_Texture* t);
+
+private:
+	void Execute(); // overrided
 };
 #endif

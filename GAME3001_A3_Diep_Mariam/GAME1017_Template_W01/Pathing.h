@@ -33,12 +33,12 @@ public:
 	PathNode* GetToNode() { return m_pToNode; }
 private:
 	double m_cost;
-	PathNode *m_pFromNode, *m_pToNode;
+	PathNode* m_pFromNode, * m_pToNode;
 };
 
 struct NodeRecord
 { // Everything public by default.
-	NodeRecord(PathNode* n = nullptr) :m_node(n), m_connection(nullptr), m_fromRecord(nullptr), m_costSoFar(0.0), m_totalCost(0.0){	}
+	NodeRecord(PathNode* n = nullptr) :m_node(n), m_connection(nullptr), m_fromRecord(nullptr), m_costSoFar(0.0), m_totalCost(0.0) {	}
 	PathNode* m_node;
 	PathConnection* m_connection;
 	NodeRecord* m_fromRecord;

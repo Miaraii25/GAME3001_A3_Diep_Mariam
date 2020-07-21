@@ -12,8 +12,9 @@ public:
 	void Render();
 	void Start();
 	void SetDebugMode(bool enable);
+	void Collision();
 private:
-	enum state { idle, running } m_state;
+	enum state { idle, running, destroyed } m_state;
 	bool m_dir;
 	void Move2Stop(const double angle);
 	void SetState(int s);
@@ -26,10 +27,15 @@ private:
 		m_velMax,
 		m_rotMax;
 	double m_baseAngle;
+	double m_turnAngle;
 	int m_dirX;
 	int m_dirY;
 	bool m_isDebugEnable;
 	SDL_FRect* m_playerDest;
+	bool m_isLOS;
+	bool m_inRange;
+	bool m_isCollisioned;
+	int  m_eslapsedFromCollision;
 };
 
 #endif

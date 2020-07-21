@@ -3,7 +3,9 @@
 #include "EventManager.h"
 #include "SoundManager.h"
 #include "DebugManager.h"
+#include "Engine.h"
 #define SPEED 2
+#define RADIUS 100
 
 BaseEnemy::BaseEnemy(SDL_Rect s, SDL_FRect d, SDL_Renderer* r, SDL_Texture* t, int sstart, int smin, int smax, int nf, double baseAngle, int dirX, int dirY, SDL_FRect* playerDest)
 	:AnimatedSprite(s, d, r, t, sstart, smin, smax, nf), m_state(idle), m_dir(0), m_baseAngle(baseAngle), m_dirX(dirX), m_dirY(dirY), m_playerDest(playerDest)
@@ -12,6 +14,10 @@ BaseEnemy::BaseEnemy(SDL_Rect s, SDL_FRect d, SDL_Renderer* r, SDL_Texture* t, i
 	m_velMax = 5.0;
 	m_rotMax = 2.5;
 	SetState(idle);
+	m_isLOS = false;
+	m_inRange = false;
+	m_turnAngle = 0;
+	m_isCollisioned = false;
 }
 
 void BaseEnemy::Update()
@@ -20,7 +26,6 @@ void BaseEnemy::Update()
 	{
 		ToggleState();
 	}
-
 	if (m_state == running) {
 		if (m_dirY == -1)
 		{
@@ -73,6 +78,52 @@ void BaseEnemy::Update()
 				m_baseAngle -= 180.0;
 			}
 		}
+		SetAngle(m_baseAngle);
+	}
+	else
+	{
+		m_turnAngle += 4.0f;
+		if (m_turnAngle >= 360.0f)
+		{
+			m_turnAngle = m_turnAngle - 360.0f;
+		}
+		SetAngle(m_baseAngle + m_turnAngle);
+		Animate();
+	}
+
+	if (m_isDebugEnable)
+	{
+		int enemyX = GetDstP()->x + GetDstP()->w / 2;
+		int enemyY = GetDstP()->y + GetDstP()->h / 2;
+
+		int playerX = m_playerDest->x + m_playerDest->w / 2;
+		int playerY = m_playerDest->y + m_playerDest->h / 2;
+
+		m_inRange = (MAMA::Distance(enemyX, playerX, enemyY, playerY) < (double)RADIUS) ? true : false;
+
+		m_isLOS = true;
+		for (int row = 0; row < ROWS; row++)
+		{
+			for (int col = 0; col < COLS; col++)
+			{
+				auto tile = Engine::Instance().GetLevel()[row][col];
+				if (tile->IsObstacle())
+				{
+					SDL_Rect rect = { (int)tile->GetDstP()->x, (int)tile->GetDstP()->y, (int)tile->GetDstP()->w, (int)tile->GetDstP()->h };
+					if (SDL_IntersectRectAndLine((const SDL_Rect*)&rect, &enemyX, &enemyY, &playerX, &playerY))
+					{
+						m_isLOS = false;
+						break;
+					}
+				}
+
+			}
+
+			if (!m_isLOS)
+			{
+				break;
+			}
+		}
 	}
 }
 
@@ -80,10 +131,17 @@ void BaseEnemy::Render()
 {
 	// enable debug mode
 	if (m_isDebugEnable) {
-		double circle_x = GetDstP()->x + GetDstP()->w/2;
-		double circle_y = GetDstP()->y + GetDstP()->h/2;
-		double circle_radius = 100; // Increase this later
-		SDL_SetRenderDrawColor(m_pRend, 250, 0, 0, 255);
+		double circle_x = GetDstP()->x + GetDstP()->w / 2;
+		double circle_y = GetDstP()->y + GetDstP()->h / 2;
+		double circle_radius = RADIUS; // Increase this later
+		if (m_inRange)
+		{
+			SDL_SetRenderDrawColor(m_pRend, 250, 0, 0, 255);
+		}
+		else
+		{
+			SDL_SetRenderDrawColor(m_pRend, 0, 0, 250, 255);
+		}
 
 		double point1_x;
 		double point1_y;
@@ -101,14 +159,33 @@ void BaseEnemy::Render()
 			SDL_RenderDrawLineF(m_pRend, point1_x, point1_y, point2_x, point2_y);
 		}
 
-		// Draw line
+		// Draw LOS
 		point1_x = m_playerDest->x + m_playerDest->w / 2;
 		point1_y = m_playerDest->y + m_playerDest->h / 2;
+		if (m_isLOS)
+		{
+			SDL_SetRenderDrawColor(m_pRend, 250, 0, 0, 255);
+		}
+		else
+		{
+			SDL_SetRenderDrawColor(m_pRend, 0, 0, 250, 255);
+		}
 		SDL_RenderDrawLineF(m_pRend, point1_x, point1_y, circle_x, circle_y);
 	}
 
-	SetAngle(m_baseAngle);
 	SDL_RenderCopyExF(m_pRend, m_pText, GetSrcP(), GetDstP(), m_angle, 0, static_cast<SDL_RendererFlip>(m_dir));
+
+	if (m_isCollisioned)
+	{
+		m_eslapsedFromCollision += 10;
+		if (m_eslapsedFromCollision > RADIUS)
+		{
+			m_isCollisioned = false;
+		}
+		SDL_Rect src = { 0, 343, 96,96 };
+		SDL_FRect dest = { GetDstP()->x - 32, GetDstP()->y - 32, GetDstP()->w + 64, GetDstP()->h + 64 };
+		SDL_RenderCopyExF(m_pRend, m_pText, &src, &dest, 0, 0, static_cast<SDL_RendererFlip>(m_dir));
+	}
 }
 
 void BaseEnemy::Start()
@@ -121,7 +198,7 @@ void BaseEnemy::SetState(int s)
 {
 	m_state = static_cast<state>(s);
 	m_frame = 0;
-	if (m_state == idle)
+	if (m_state == idle || m_state == destroyed)
 	{
 		m_sprite = m_spriteMin = m_spriteMax = 0;
 	}
@@ -133,7 +210,7 @@ void BaseEnemy::SetState(int s)
 	}
 }
 
-void BaseEnemy::ToggleState() 
+void BaseEnemy::ToggleState()
 {
 	if (m_state == idle)
 	{
@@ -143,6 +220,7 @@ void BaseEnemy::ToggleState()
 	{
 		SetState(idle);
 	}
+	m_turnAngle = 0;
 }
 
 void BaseEnemy::SetDebugMode(bool enable) {
@@ -169,5 +247,29 @@ void BaseEnemy::SetVs(const double angle)
 
 void BaseEnemy::Move2Stop(const double angle)
 {
-	
+
+}
+
+void BaseEnemy::Collision()
+{
+	if (m_healthLevel <= 0) {
+		// Do nothing
+	}
+	else
+	{
+
+		m_healthLevel -= 20;
+		if (m_healthLevel <= 0) {
+			SOMA::PlaySound("Death", 0, 6);
+			//TODO: Death Animation here
+			SetState(destroyed);
+			m_healthLevel = 0;
+		}
+		else {
+			SOMA::PlaySound("Boom", 0, 5);
+		}
+		m_isCollisioned = true;
+		m_eslapsedFromCollision = 0;
+	}
+
 }

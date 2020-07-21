@@ -13,7 +13,7 @@ bool Button::MouseCollision()
 	const int mx = EVMA::GetMousePos().x;
 	const int my = EVMA::GetMousePos().y;
 	return (mx < (m_dst.x + m_dst.w) && mx > m_dst.x &&
-		    my < (m_dst.y + m_dst.h) && my > m_dst.y);
+		my < (m_dst.y + m_dst.h) && my > m_dst.y);
 }
 
 int Button::Update()
@@ -22,7 +22,7 @@ int Button::Update()
 	switch (m_state)
 	{
 	case STATE_UP:
-		if (col)   
+		if (col)
 			m_state = STATE_OVER;
 		break;
 	case STATE_OVER:
@@ -41,7 +41,7 @@ int Button::Update()
 				Execute();
 				return 1;
 			}
-			else 
+			else
 				m_state = STATE_UP;
 		}
 		break;
@@ -56,9 +56,8 @@ void Button::Render()
 }
 
 // Create button subclasses and their overridden Execute methods below...
-
 PlayButton::PlayButton(SDL_Rect src, SDL_FRect dst, SDL_Renderer* r, SDL_Texture* t) : Button(src, dst, r, t) {}
-void PlayButton::Execute()
-{
-	STMA::ChangeState(new GameState);
+
+void PlayButton::Execute() {
+	STMA::ChangeState(new GameState());
 }
