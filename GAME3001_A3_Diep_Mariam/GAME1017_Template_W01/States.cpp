@@ -57,6 +57,8 @@ void GameState::Enter()
 	m_pInstruct[3] = new Label("standard", 35, 85, "Press F to find the shortest path (in debug view)", black);
 	m_pInstruct[4] = new Label("standard", 35, 100, "Press K to take damage", black);
 	m_pInstruct[5] = new Label("standard", 35, 115, "Press M to move actor", black); 
+	m_pInstruct[6] = new Label("standard", 35, 130, "Left click on the mouse to have a close contact", black);
+	m_pInstruct[7] = new Label("standard", 35, 145, "Right click to fire projectile", black);
 
 	// Add player 
 	m_pPlayer = new Player({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pPlayerText, 0, 0, 0, 4);
@@ -216,7 +218,7 @@ void GameState::Render()
 		}
 	}
 
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		m_pInstruct[i]->Render();
 	}

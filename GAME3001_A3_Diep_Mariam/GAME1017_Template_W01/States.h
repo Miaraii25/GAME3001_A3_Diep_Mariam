@@ -56,7 +56,7 @@ private:
 	bool m_showCosts = false, m_hEuclid = true;
 
 	// Label for instruction
-	Label* m_pInstruct[6]; // press R, press H, press F, press M, right-click, left-click
+	Label* m_pInstruct[8]; // press R, press H, press F, press M, right-click, left-click
 };
 
 // Start the game
