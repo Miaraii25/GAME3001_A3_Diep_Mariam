@@ -18,12 +18,16 @@ BaseEnemy::BaseEnemy(SDL_Rect s, SDL_FRect d, SDL_Renderer* r, SDL_Texture* t, i
 	m_inRange = false;
 	m_turnAngle = 0;
 	m_isCollisioned = false;
+	SOMA::Load("Aud/engines.wav", "patrol", SOUND_SFX);
+	SOMA::Load("Aud/Click.wav", "Click", SOUND_SFX);
+
 }
 
 void BaseEnemy::Update()
 {
 	if (EVMA::KeyPressed(SDL_SCANCODE_P))// Toggle enemies idle/patrol mode.
 	{
+		SOMA::PlaySound("Click", 0, 7);
 		ToggleState();
 	}
 	if (m_state == running) {
@@ -51,7 +55,6 @@ void BaseEnemy::Update()
 				m_baseAngle -= 180.0;
 			}
 		}
-
 		if (m_dirX == -1)
 		{
 			if (m_dst.x > 0 && !COMA::PlayerCollision({ (int)m_dst.x, (int)m_dst.y, (int)32, (int)32 }, -SPEED, 0))
@@ -208,17 +211,21 @@ void BaseEnemy::SetState(int s)
 		m_sprite = m_spriteMin = 1;
 		m_spriteMax = 4;
 	}
+	
 }
 
 void BaseEnemy::ToggleState()
 {
 	if (m_state == idle)
 	{
+		SOMA::SetSoundVolume(14, 2);
+		SOMA::PlaySound("patrol", -1, 2);
 		SetState(running);
 	}
 	else
 	{
 		SetState(idle);
+		SOMA::StopSound(2);
 	}
 	m_turnAngle = 0;
 }
@@ -257,7 +264,6 @@ void BaseEnemy::Collision()
 	}
 	else
 	{
-
 		m_healthLevel -= 20;
 		if (m_healthLevel <= 0) {
 			SOMA::PlaySound("Death", 0, 6);

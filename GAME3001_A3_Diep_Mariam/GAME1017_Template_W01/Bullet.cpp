@@ -4,13 +4,14 @@
 #include "SoundManager.h"
 #include "DebugManager.h"
 #include "Engine.h"
-#define SPEED 2
-#define RADIUS 100
+#define SPEED 5
+#define RADIUS 200
 
-Bullet::Bullet(SDL_Rect s, SDL_FRect d, SDL_Renderer* r, SDL_Texture* t, int sstart, int smin, int smax, int nf)
-	:AnimatedSprite(s, d, r, t, sstart, smin, smax, nf), m_state(died), m_dir(0)
+Bullet::Bullet(SDL_Rect s, SDL_FRect d, SDL_Renderer* r, SDL_Texture* t, int sstart, int smin, int smax, int nf, /*const SDL_Point start*/float x, float y, int direction)
+	:AnimatedSprite(s, d, r, t, sstart, smin, smax, nf), m_state(died), m_dir(0) 
 {
 	m_isCollisioned = false;
+	Shoot(x, y, direction);
 }
 
 void Bullet::Update()
@@ -74,7 +75,7 @@ void Bullet::Stop()
 	m_sprite = 4;
 }
 
-void Bullet::Shoot(const SDL_Point start, int direction)
+void Bullet::Shoot(/*const SDL_Point start*/float x , float y, int direction)
 {
 	m_state = shooting;
 	m_isCollisioned = false;
@@ -84,10 +85,13 @@ void Bullet::Shoot(const SDL_Point start, int direction)
 	m_src.w = 9;
 	m_src.h = 29;
 
-	m_dst.x = start.x;
-	m_dst.y = start.y;
-	m_dst.w = 9;
-	m_dst.h = 29;
+	//m_dst.x = start.x;
+	//m_dst.y = start.y;
+	
+	m_dst.x = x;
+	m_dst.y = y;
+	m_dst.w = 19;
+	m_dst.h = 39;
 
 	m_direction = direction;
 	m_distance = 0;

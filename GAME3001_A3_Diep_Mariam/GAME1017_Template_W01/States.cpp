@@ -40,11 +40,11 @@ void GameState::Enter()
 	SOMA::Load("Aud/adventure.wav", "adventure", SOUND_MUSIC);
 	SOMA::Load("Aud/boom.wav", "Boom", SOUND_SFX);
 	SOMA::Load("Aud/death.wav", "Death", SOUND_SFX);
-	SOMA::Load("Aud/Click.wav", "Click", SOUND_SFX);
 	SOMA::Load("Aud/PressM.wav", "PressM", SOUND_SFX);
 	SOMA::Load("Aud/PressR.wav", "PressR", SOUND_SFX);
 	SOMA::Load("Aud/PressF.wav", "PressF", SOUND_SFX);
 	SOMA::Load("Aud/PressH.mp3", "PressH", SOUND_SFX);
+	SOMA::Load("Aud/Laser2.wav", "Shoot", SOUND_SFX);
 
 	SOMA::SetMusicVolume(15);
 	SOMA::PlayMusic("adventure", -1, 3000);
@@ -53,24 +53,25 @@ void GameState::Enter()
 
 	m_pInstruct[0] = new Label("standard", 35, 40, "Press R to restart the play scene", black);
 	m_pInstruct[1] = new Label("standard", 35, 55, "Press H to toggle the Debug view", black);
-	m_pInstruct[2] = new Label("standard", 35, 70, "Press P to toggle idel/patrol mode of enemies ", black);
-	m_pInstruct[3] = new Label("standard", 35, 85, "Press F to find the shortest path (in debug view)", black);
-	m_pInstruct[4] = new Label("standard", 35, 100, "Press K to take damage", black);
-	m_pInstruct[5] = new Label("standard", 35, 115, "Press M to move actor", black); 
-	m_pInstruct[6] = new Label("standard", 35, 130, "Left click on the mouse to have a close contact", black);
-	m_pInstruct[7] = new Label("standard", 35, 145, "Right click to fire projectile", black);
+	m_pInstruct[2] = new Label("standard", 35, 70, "Press P to toggle idle/patrol mode of enemies ", black);
+	m_pInstruct[3] = new Label("standard", 35, 85, "Press K to take damage", black);
+	m_pInstruct[4] = new Label("standard", 35, 100, "Press M to move actor", black); 
+	m_pInstruct[5] = new Label("standard", 35, 115, "Right click to fire projectile", black);
+	///m_pInstruct[6] = new Label("standard", 35, 130, "Left click on the mouse to have a close contact", black);
+	//m_pInstruct[3] = new Label("standard", 35, 85, "Press F to find the shortest path (in debug view)", black);
 
 	// Add player 
 	m_pPlayer = new Player({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pPlayerText, 0, 0, 0, 4);
 
 	// Add enemies
-	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(17) * 32, (float)(4) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 0.0f, 0, -1, m_pPlayer->GetDstP()));
-	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(6) * 32, (float)(10) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 90.0f, 1, 0, m_pPlayer->GetDstP()));
-	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(22) * 32, (float)(11) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 180.0f, 0, 1, m_pPlayer->GetDstP()));
-	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(23) * 32, (float)(15) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 0, 0, 0, 4, 270.0f, -1, 0, m_pPlayer->GetDstP()));
+	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(17) * 32, (float)(4) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 4, 4, 4, 4, 0.0f, 0, -1, m_pPlayer->GetDstP()));
+	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(6) * 32, (float)(10) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 4, 4, 4, 4, 90.0f, 1, 0, m_pPlayer->GetDstP()));
+	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(22) * 32, (float)(11) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 4, 4, 4, 4, 180.0f, 0, 1, m_pPlayer->GetDstP()));
+	m_enemies.push_back(new BaseEnemy({ 0,0,40,57 }, { (float)(23) * 32, (float)(15) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pEnemyText, 4, 4, 4, 4, 270.0f, -1, 0, m_pPlayer->GetDstP()));
 
 	// Add bullet
-	m_pBullet = new Bullet({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pBulletText, 0, 0, 0, 4);
+	m_pBullet.reserve(10);
+	
 
 	ifstream inFile("Dat/Tiledata.txt");
 	if (inFile.is_open())
@@ -166,8 +167,12 @@ void GameState::Update()
 			{
 				//m_pPlayer->GetDstP()->x = (float)(xIdx * 32);
 				//m_pPlayer->GetDstP()->y = (float)(yIdx * 32);
-				m_pBullet->Shoot({ (int)(m_pPlayer->GetDstP()->x + m_pPlayer->GetDstP()->w / 2) , (int)(m_pPlayer->GetDstP()->y + m_pPlayer->GetDstP()->h / 2) }, m_pPlayer->GetDirection());
-				SOMA::PlaySound("Click", 0, 4);
+				//m_pBullet->Shoot({ (int)(m_pPlayer->GetDstP()->x + m_pPlayer->GetDstP()->w / 2) , (int)(m_pPlayer->GetDstP()->y + m_pPlayer->GetDstP()->h / 2) }, m_pPlayer->GetDirection());
+				m_pBullet.push_back(new Bullet({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pBulletText, 0, 0, 0, 4,
+							 (float)(m_pPlayer->GetDstP()->x + m_pPlayer->GetDstP()->w * 0.1), (float)(m_pPlayer->GetDstP()->y + m_pPlayer->GetDstP()->h * 0.3), m_pPlayer->GetDirection()));
+			
+				SOMA::SetSoundVolume(5, 4);
+				SOMA::PlaySound("Shoot", 0, 4);
 			}
 
 		}
@@ -178,17 +183,23 @@ void GameState::Update()
 		(*it)->Update();
 	}
 
-	m_pBullet->Update();
-
-	if (!m_pBullet->isDied())
+	for (int i = 0; i < m_pBullet.size(); i++)
 	{
-		for (auto it = m_enemies.begin(); it != m_enemies.end(); ++it) {
-			if (COMA::AABBCheck(*m_pBullet->GetDstP(), *((*it)->GetDstP())))
-			{
-				(*it)->Collision();
-				m_pBullet->Collision();
-			}
+		m_pBullet[i]->Update();
+	}
 
+	for (int i = 0; i < m_pBullet.size(); i++)
+	{
+		if (!m_pBullet[i]->isDied())
+		{
+			for (auto it = m_enemies.begin(); it != m_enemies.end(); ++it) {
+				if (COMA::AABBCheck(*m_pBullet[i]->GetDstP(), *((*it)->GetDstP())))
+				{
+					(*it)->Collision();
+					m_pBullet[i]->Collision();
+				}
+
+			}
 		}
 	}
 }
@@ -218,7 +229,7 @@ void GameState::Render()
 		}
 	}
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		m_pInstruct[i]->Render();
 	}
@@ -231,7 +242,10 @@ void GameState::Render()
 		DrawHealthBar({ (int)(*it)->GetDstP()->x - 16, (int)(*it)->GetDstP()->y - 16, 64,16 }, (*it)->getHealthLevel());
 	}
 
-	m_pBullet->Render();
+	for (int i = 0; i < m_pBullet.size(); i++)
+	{
+		m_pBullet[i]->Render();
+	}
 
 	PAMA::DrawPath(); // I save the path in a static vector to be drawn here.
 	DEMA::FlushLines(); // And... render ALL the queued lines. Phew.

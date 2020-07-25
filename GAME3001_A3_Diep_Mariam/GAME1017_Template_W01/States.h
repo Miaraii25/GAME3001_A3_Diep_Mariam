@@ -50,7 +50,7 @@ private:
 	// Example-specific properties.
 	std::vector<BaseEnemy*> m_enemies;
 	std::map<char, Tile*> m_tiles;
-	Bullet* m_pBullet;
+	std::vector<Bullet*> m_pBullet;
 	Player* m_pPlayer;
 	Sprite* m_pBling;
 	bool m_showCosts = false, m_hEuclid = true;

@@ -7,12 +7,12 @@
 class Bullet : public AnimatedSprite
 {
 public:
-	Bullet(SDL_Rect s, SDL_FRect d, SDL_Renderer* r, SDL_Texture* t, int sstart, int smin, int smax, int nf);
+	Bullet(SDL_Rect s, SDL_FRect d, SDL_Renderer* r, SDL_Texture* t, int sstart, int smin, int smax, int nf, /*const SDL_Point start*/float x, float y, int direction);
 	void Update();
 	void Render();
 	void Start();
 	bool isDied() { return (m_state == died); }
-	void Shoot(const SDL_Point start, int direction);
+	void Shoot(/*const SDL_Point start*/float x, float y, int direction);
 	void Collision();
 	bool IsCollisioned() { return m_isCollisioned; }
 private:
