@@ -54,9 +54,9 @@ void GameState::Enter()
 	m_pInstruct[0] = new Label("standard", 35, 40, "Press R to restart the play scene", black);
 	m_pInstruct[1] = new Label("standard", 35, 55, "Press H to toggle the Debug view", black);
 	m_pInstruct[2] = new Label("standard", 35, 70, "Press P to toggle idle/patrol mode of enemies ", black);
-	m_pInstruct[3] = new Label("standard", 35, 85, "Press K to take damage", black);
-	m_pInstruct[4] = new Label("standard", 35, 100, "Press M to move actor", black); 
-	m_pInstruct[5] = new Label("standard", 35, 115, "Right click to fire projectile", black);
+	m_pInstruct[3] = new Label("standard", 35, 85, "Press W-A-S-D to move character", black); 
+	m_pInstruct[4] = new Label("standard", 35, 100, "Right click to fire projectile", black);
+	//m_pInstruct[3] = new Label("standard", 35, 85, "Press K to take damage", black);
 	///m_pInstruct[6] = new Label("standard", 35, 130, "Left click on the mouse to have a close contact", black);
 	//m_pInstruct[3] = new Label("standard", 35, 85, "Press F to find the shortest path (in debug view)", black);
 
@@ -153,29 +153,26 @@ void GameState::Update()
 		SOMA::PlaySound("PressH", 0, 3);
 	}
 
-	if (1)
+	if (EVMA::KeyPressed(SDL_SCANCODE_SPACE)) // Toggle the heuristic used for pathfinding.
 	{
-		if (EVMA::KeyPressed(SDL_SCANCODE_SPACE)) // Toggle the heuristic used for pathfinding.
-		{
-			m_hEuclid = !m_hEuclid;
-			std::cout << "Setting " << (m_hEuclid ? "Euclidian" : "Manhattan") << " heuristic..." << std::endl;
-		}
-		if (EVMA::MousePressed(1) || EVMA::MousePressed(3)) // If user has clicked.
-		{
+		m_hEuclid = !m_hEuclid;
+		std::cout << "Setting " << (m_hEuclid ? "Euclidian" : "Manhattan") << " heuristic..." << std::endl;
+	}
+	if (EVMA::MousePressed(1) || EVMA::MousePressed(3)) // If user has clicked.
+	{
 
-			if (EVMA::MousePressed(1)) // Move the player with left-click.
-			{
-				//m_pPlayer->GetDstP()->x = (float)(xIdx * 32);
-				//m_pPlayer->GetDstP()->y = (float)(yIdx * 32);
-				//m_pBullet->Shoot({ (int)(m_pPlayer->GetDstP()->x + m_pPlayer->GetDstP()->w / 2) , (int)(m_pPlayer->GetDstP()->y + m_pPlayer->GetDstP()->h / 2) }, m_pPlayer->GetDirection());
-				m_pBullet.push_back(new Bullet({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pBulletText, 0, 0, 0, 4,
-							 (float)(m_pPlayer->GetDstP()->x + m_pPlayer->GetDstP()->w * 0.1), (float)(m_pPlayer->GetDstP()->y + m_pPlayer->GetDstP()->h * 0.3), m_pPlayer->GetDirection()));
-			
-				SOMA::SetSoundVolume(5, 4);
-				SOMA::PlaySound("Shoot", 0, 4);
-			}
-
+		if (EVMA::MousePressed(1)) // Move the player with left-click.
+		{
+			//m_pPlayer->GetDstP()->x = (float)(xIdx * 32);
+			//m_pPlayer->GetDstP()->y = (float)(yIdx * 32);
+			//m_pBullet->Shoot({ (int)(m_pPlayer->GetDstP()->x + m_pPlayer->GetDstP()->w / 2) , (int)(m_pPlayer->GetDstP()->y + m_pPlayer->GetDstP()->h / 2) }, m_pPlayer->GetDirection());
+			m_pBullet.push_back(new Bullet({ 0,0,32,32 }, { (float)(16) * 32, (float)(12) * 32, 32, 32 }, Engine::Instance().GetRenderer(), m_pBulletText, 0, 0, 0, 4,
+						 (float)(m_pPlayer->GetDstP()->x + m_pPlayer->GetDstP()->w * 0.1), (float)(m_pPlayer->GetDstP()->y + m_pPlayer->GetDstP()->h * 0.3), m_pPlayer->GetDirection()));
+		
+			SOMA::SetSoundVolume(5, 4);
+			SOMA::PlaySound("Shoot", 0, 4);
 		}
+
 	}
 	m_pPlayer->Update(); // Just stops MagaMan from moving.
 
@@ -229,7 +226,7 @@ void GameState::Render()
 		}
 	}
 
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		m_pInstruct[i]->Render();
 	}
